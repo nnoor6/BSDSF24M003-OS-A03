@@ -1,5 +1,6 @@
 #include "shell.h"
-
+char* history[HISTORY_SIZE];
+int history_count = 0;
 char* read_cmd(char* prompt, FILE* fp) {
     printf("%s", prompt);
     char* cmdline = (char*) malloc(sizeof(char) * MAX_LEN);
@@ -92,6 +93,11 @@ int handle_builtin(char** arglist) {
         printf("Job control not yet implemented.\n");
         return 1;
     }
-
+    if (strcmp(arglist[0], "history") == 0) {
+        for (int i = 0; i < history_count; i++) {
+            printf("%d  %s\n", i + 1, history[i]);
+        }
+        return 1;
+    }
     return 0;
 }
