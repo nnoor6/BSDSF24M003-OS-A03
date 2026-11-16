@@ -1,3 +1,7 @@
+#include <readline/readline.h>
+#include <readline/history.h>
+
+
 #ifndef SHELL_H
 #define SHELL_H
 #define HISTORY_SIZE 20
@@ -18,8 +22,9 @@ extern int history_count;
 
 
 // Function prototypes
+void initialize_readline(void);
 
-
+char* read_cmd_readline(char* prompt);
 int handle_builtin(char** arglist);
 char* read_cmd(char* prompt, FILE* fp);
 char** tokenize(char* cmdline);

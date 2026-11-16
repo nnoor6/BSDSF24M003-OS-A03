@@ -2,8 +2,7 @@ all: bin/myshell
 
 bin/myshell: obj/main.o obj/shell.o obj/execute.o
 	mkdir -p bin
-	gcc obj/main.o obj/shell.o obj/execute.o -o bin/myshell
-
+	gcc obj/main.o obj/shell.o obj/execute.o -o bin/myshell -lreadline
 obj/main.o: src/main.c
 	mkdir -p obj
 	gcc -Wall -Iinclude -c src/main.c -o obj/main.o

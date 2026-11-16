@@ -1,10 +1,11 @@
 #include "shell.h"
 
 int main() {
+
+initialize_readline();
     char* cmdline;
     char** arglist;
-
-    while ((cmdline = read_cmd(PROMPT, stdin)) != NULL) {
+while ((cmdline = read_cmd_readline(PROMPT)) != NULL) {
         // Skip empty lines
         if (cmdline[0] == '\0') {
             free(cmdline);
