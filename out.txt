@@ -1,0 +1,8 @@
+total 24
+-rw-rw-r--  1 noor noor  470 Nov 16 14:53 Makefile
+drwxrwxr-x 10 noor noor 4096 Nov 15 14:45 OS-Codes
+drwxrwxr-x  2 noor noor 4096 Nov 16 15:08 bin
+drwxrwxr-x  2 noor noor 4096 Nov 16 15:03 include
+drwxrwxr-x  2 noor noor 4096 Nov 16 15:08 obj
+-rw-r--r--  1 noor noor    0 Nov 16 15:09 out.txt
+drwxrwxr-x  2 noor noor 4096 Nov 16 15:07 src

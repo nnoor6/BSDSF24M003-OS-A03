@@ -23,7 +23,7 @@ extern int history_count;
 
 // Function prototypes
 void initialize_readline(void);
-
+int execute_with_redirection(char** arglist);
 char* read_cmd_readline(char* prompt);
 int handle_builtin(char** arglist);
 char* read_cmd(char* prompt, FILE* fp);

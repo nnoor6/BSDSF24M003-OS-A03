@@ -1,18 +1,19 @@
 #include "shell.h"
 
 int main() {
+    initialize_readline();
 
-initialize_readline();
     char* cmdline;
     char** arglist;
-while ((cmdline = read_cmd_readline(PROMPT)) != NULL) {
+
+    while ((cmdline = read_cmd_readline(PROMPT)) != NULL) {
         // Skip empty lines
         if (cmdline[0] == '\0') {
             free(cmdline);
             continue;
         }
 
-        // Handle !n (re-execution)
+        // Handle !n re-execution
         if (cmdline[0] == '!') {
             int n = atoi(&cmdline[1]);
             if (n > 0 && n <= history_count) {
@@ -25,7 +26,7 @@ while ((cmdline = read_cmd_readline(PROMPT)) != NULL) {
                 continue;
             }
         } else {
-            // Add to history (shift if full)
+            // Add to history
             if (history_count == HISTORY_SIZE) {
                 free(history[0]);
                 for (int i = 1; i < HISTORY_SIZE; i++) {
@@ -39,7 +40,7 @@ while ((cmdline = read_cmd_readline(PROMPT)) != NULL) {
         // Tokenize and execute
         if ((arglist = tokenize(cmdline)) != NULL) {
             if (handle_builtin(arglist) == 0) {
-                execute(arglist);
+                execute_with_redirection(arglist);
             }
             for (int i = 0; arglist[i] != NULL; i++) {
                 free(arglist[i]);
