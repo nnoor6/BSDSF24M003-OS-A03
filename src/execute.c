@@ -1,6 +1,10 @@
 #include "shell.h"
 #include <fcntl.h>
 
+int run_in_background = 0;
+
+extern void add_job(pid_t pid, const char* cmd);
+
 /* Helper: find a token in arglist, return its index or -1 */
 static int find_token(char** arglist, const char* token) {
     for (int i = 0; arglist[i] != NULL; i++) {
@@ -44,7 +48,12 @@ static int execute_redirected(char** arglist, char* infile, char* outfile) {
         exit(1);
     }
 
-    waitpid(cpid, &status, 0);
+    // Parent
+    if (run_in_background) {
+        add_job(cpid, arglist[0]);
+    } else {
+        waitpid(cpid, &status, 0);
+    }
     return 0;
 }
 
@@ -61,9 +70,8 @@ static int execute_pipe(char** left_args, char** right_args) {
 
     left_pid = fork();
     if (left_pid == 0) {
-        // Left child: write to pipe
-        close(pipefd[0]);               // close read end
-        dup2(pipefd[1], STDOUT_FILENO); // stdout → pipe write
+        close(pipefd[0]);
+        dup2(pipefd[1], STDOUT_FILENO);
         close(pipefd[1]);
         execvp(left_args[0], left_args);
         perror("Left command not found");
@@ -72,9 +80,8 @@ static int execute_pipe(char** left_args, char** right_args) {
 
     right_pid = fork();
     if (right_pid == 0) {
-        // Right child: read from pipe
-        close(pipefd[1]);              // close write end
-        dup2(pipefd[0], STDIN_FILENO); // stdin → pipe read
+        close(pipefd[1]);
+        dup2(pipefd[0], STDIN_FILENO);
         close(pipefd[0]);
         execvp(right_args[0], right_args);
         perror("Right command not found");
@@ -85,20 +92,20 @@ static int execute_pipe(char** left_args, char** right_args) {
     close(pipefd[0]);
     close(pipefd[1]);
 
-    waitpid(left_pid, &status, 0);
-    waitpid(right_pid, &status, 0);
+    if (run_in_background) {
+        add_job(right_pid, "pipeline");
+    } else {
+        waitpid(left_pid, &status, 0);
+        waitpid(right_pid, &status, 0);
+    }
     return 0;
 }
 
 int execute_with_redirection(char** arglist) {
-    // Find operators
     int pipe_idx = find_token(arglist, "|");
 
     // --- Pipeline case ---
     if (pipe_idx != -1) {
-        // Split arglist at pipe_idx
-        // Left side: arglist[0 .. pipe_idx-1]
-        // Right side: arglist[pipe_idx+1 .. end]
         char* left_args[MAXARGS];
         char* right_args[MAXARGS];
         int i, j;
@@ -122,7 +129,7 @@ int execute_with_redirection(char** arglist) {
 
     for (int i = 0; arglist[i] != NULL; i++) {
         if (strcmp(arglist[i], ">") == 0) {
-            outfile = arglist[++i];  // next token is filename
+            outfile = arglist[++i];
         } else if (strcmp(arglist[i], "<") == 0) {
             infile = arglist[++i];
         } else {
@@ -132,4 +139,9 @@ int execute_with_redirection(char** arglist) {
     clean_args[ci] = NULL;
 
     return execute_redirected(clean_args, infile, outfile);
+}
+
+/* Old execute() — kept for compatibility, but main.c uses execute_with_redirection */
+int execute(char* arglist[]) {
+    return execute_with_redirection(arglist);
 }

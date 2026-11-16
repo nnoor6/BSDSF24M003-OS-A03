@@ -22,6 +22,20 @@ extern int history_count;
 
 
 // Function prototypes
+
+#define MAX_JOBS 20
+
+typedef struct {
+    pid_t pid;
+    char cmd[256];
+    int active;
+} Job;
+
+extern Job jobs[MAX_JOBS];
+extern int job_count;
+
+void add_job(pid_t pid, const char* cmd);
+void reap_zombies(void);
 void initialize_readline(void);
 int execute_with_redirection(char** arglist);
 char* read_cmd_readline(char* prompt);

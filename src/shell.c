@@ -3,6 +3,36 @@
 char* history[HISTORY_SIZE];
 int history_count = 0;
 
+
+
+Job jobs[MAX_JOBS];
+int job_count = 0;
+
+void add_job(pid_t pid, const char* cmd) {
+    if (job_count >= MAX_JOBS) {
+        printf("Too many background jobs.\n");
+        return;
+    }
+    jobs[job_count].pid = pid;
+    strncpy(jobs[job_count].cmd, cmd, 255);
+    jobs[job_count].cmd[255] = '\0';
+    jobs[job_count].active = 1;
+    job_count++;
+}
+
+void reap_zombies(void) {
+    int status;
+    pid_t pid;
+    while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+        for (int i = 0; i < job_count; i++) {
+            if (jobs[i].pid == pid && jobs[i].active) {
+                printf("\n[Background job %d done] %s\n", pid, jobs[i].cmd);
+                jobs[i].active = 0;
+                break;
+            }
+        }
+    }
+}
 /* ---------- Readline completion ---------- */
 
 char *command_generator(const char *text, int state) {
@@ -119,10 +149,16 @@ int handle_builtin(char** arglist) {
     }
 
     if (strcmp(arglist[0], "jobs") == 0) {
-        printf("Job control not yet implemented.\n");
+        int found = 0;
+        for (int i = 0; i < job_count; i++) {
+            if (jobs[i].active) {
+                printf("[%d] %d  %s\n", i + 1, jobs[i].pid, jobs[i].cmd);
+                found = 1;
+            }
+        }
+        if (!found) printf("No active background jobs.\n");
         return 1;
     }
-
     if (strcmp(arglist[0], "history") == 0) {
         for (int i = 0; i < history_count; i++) {
             printf("%d  %s\n", i + 1, history[i]);
