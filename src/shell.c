@@ -2,7 +2,51 @@
 #include <fcntl.h>
 
 char* history[HISTORY_SIZE];
+
 int history_count = 0;
+
+ShellVar variables[MAX_VARS];
+int var_count = 0;
+
+void set_var(const char* name, const char* value) {
+    for (int i = 0; i < var_count; i++) {
+        if (strcmp(variables[i].name, name) == 0) {
+            strncpy(variables[i].value, value, 255);
+            variables[i].value[255] = '\0';
+            return;
+        }
+    }
+    if (var_count < MAX_VARS) {
+        strncpy(variables[var_count].name, name, 63);
+        variables[var_count].name[63] = '\0';
+        strncpy(variables[var_count].value, value, 255);
+        variables[var_count].value[255] = '\0';
+        var_count++;
+    }
+}
+
+char* get_var(const char* name) {
+    for (int i = 0; i < var_count; i++) {
+        if (strcmp(variables[i].name, name) == 0) {
+            return variables[i].value;
+        }
+    }
+    return NULL;
+}
+
+void expand_vars(char** arglist) {
+    for (int i = 0; arglist[i] != NULL; i++) {
+        if (arglist[i][0] == '$') {
+            char* var_name = arglist[i] + 1; // skip the $
+            char* val = get_var(var_name);
+            if (val) {
+                // Replace the argument with the variable's value
+                strncpy(arglist[i], val, ARGLEN - 1);
+                arglist[i][ARGLEN - 1] = '\0';
+            }
+        }
+    }
+}
 Job jobs[MAX_JOBS];
 int job_count = 0;
 
@@ -144,6 +188,12 @@ int handle_builtin(char** arglist) {
     if (strcmp(arglist[0], "history") == 0) {
         for (int i = 0; i < history_count; i++) {
             printf("%d  %s\n", i + 1, history[i]);
+        }
+        return 1;
+    }
+	    if (strcmp(arglist[0], "set") == 0 || strcmp(arglist[0], "export") == 0) {
+        for (int i = 0; i < var_count; i++) {
+            printf("%s=%s\n", variables[i].name, variables[i].value);
         }
         return 1;
     }

@@ -35,7 +35,17 @@ int main() {
             history[history_count++] = strdup(cmdline);
         }
 
-
+        // Handle Variable Assignment (e.g., MSG="hello")
+        char* eq_ptr = strchr(cmdline, '=');
+        if (eq_ptr != NULL && strchr(cmdline, ' ') > eq_ptr) {
+            // It's an assignment (no spaces before the =)
+            *eq_ptr = '\0'; // split at =
+            char* var_name = cmdline;
+            char* var_value = eq_ptr + 1;
+            set_var(var_name, var_value);
+            free(cmdline);
+            continue;
+        }
 	        // Handle if-then-else-fi
         if (strncmp(cmdline, "if ", 3) == 0) {
             execute_if_block(cmdline);
@@ -66,6 +76,7 @@ int main() {
             arglist = tokenize(seg_copy);
 
             if (arglist != NULL) {
+		expand_vars(arglist);
                 if (handle_builtin(arglist) == 0) {
                     if (background) {
                         // Set a global flag used by execute_with_redirection

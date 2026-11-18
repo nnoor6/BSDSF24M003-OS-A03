@@ -24,7 +24,19 @@ extern int history_count;
 // Function prototypes
 
 #define MAX_JOBS 20
+#define MAX_VARS 50
 
+typedef struct {
+    char name[64];
+    char value[256];
+} ShellVar;
+
+extern ShellVar variables[MAX_VARS];
+extern int var_count;
+
+void set_var(const char* name, const char* value);
+char* get_var(const char* name);
+void expand_vars(char** arglist);
 typedef struct {
     pid_t pid;
     char cmd[256];
