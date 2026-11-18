@@ -35,6 +35,13 @@ int main() {
             history[history_count++] = strdup(cmdline);
         }
 
+
+	        // Handle if-then-else-fi
+        if (strncmp(cmdline, "if ", 3) == 0) {
+            execute_if_block(cmdline);
+            free(cmdline);
+            continue;
+        }
         // Split by ';' for sequential chaining
         char* saveptr1;
         char* segment = strtok_r(cmdline, ";", &saveptr1);

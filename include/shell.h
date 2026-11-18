@@ -1,6 +1,6 @@
 #include <readline/readline.h>
 #include <readline/history.h>
-
+#include <fcntl.h>
 
 #ifndef SHELL_H
 #define SHELL_H
@@ -43,5 +43,6 @@ int handle_builtin(char** arglist);
 char* read_cmd(char* prompt, FILE* fp);
 char** tokenize(char* cmdline);
 int execute(char** arglist);
-
+int execute_if_block(char* first_line);
+int run_command_and_get_status(char* cmdline);
 #endif // SHELL_H
